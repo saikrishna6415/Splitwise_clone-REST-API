@@ -68,15 +68,15 @@ router.delete('/deletefriend/:id', async function (req, res) {
 })
 
 
-router.post('/addexpense', async function (req, res) {
-  var expenseDetails = req.body
-  const data = database.addExpense(expenseDetails);
-  data.then(result => {
-    // console.log(result)
-    res.status(200).send(result)
-  })
-    .catch(err => console.log(err))
-})
+// router.post('/addexpense', async function (req, res) {
+//   var expenseDetails = req.body
+//   const data = database.addExpense(expenseDetails);
+//   data.then(result => {
+//     // console.log(result)
+//     res.status(200).send(result)
+//   })
+//     .catch(err => console.log(err))
+// })
 
 
 router.post('/settleup', async function (req, res) {
@@ -91,9 +91,9 @@ router.post('/settleup', async function (req, res) {
 
 
 
-router.post('/addexpense2', async function (req, res) {
+router.post('/addexpense', async function (req, res) {
   var expenseDetails = req.body
-  const data = database.addExpense2(expenseDetails);
+  const data = database.addExpenseGroup(expenseDetails);
   data.then(result => {
     // console.log(result)
     res.status(200).send(result)

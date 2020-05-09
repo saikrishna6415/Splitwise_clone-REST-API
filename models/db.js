@@ -39,8 +39,8 @@ async function getFriends(id) {
 }
 
 async function addFriend(friendDetails) {
-    // const user = '2'
-    const user = friendDetails.currentUser
+    const user = '1'
+    // const user = friendDetails.currentUser
     var newFriendDetails
     var userDetails;
     var newFriendId
@@ -126,113 +126,131 @@ async function deleteFriend(friendDetails) {
 }
 
 
-async function addExpense(expenseDetails) {
-    // var expenseId = 4
-    // var userId = '1'
-    // var userpaid = 50
-    // var userowedshare = 25
-    // var friendId = '2'
-    // var friendpaid = 0
-    // var friendowedShare = 0
-    // var description = 'cooldrinks'
-    // var amount = 50
-    var data;
-    var owes;
-    var friendData;
-    var fromId;
-    var toId;
-    if (expenseDetails.userpaid === 0 && expenseDetails.friendpaid > 0) {
-        owes = expenseDetails.friendowedShare
-        fromId = expenseDetails.userId
-        toId = expenseDetails.friendId
-    } else if (expenseDetails.userpaid > 0 && expenseDetails.friendpaid === 0) {
-        owes = expenseDetails.userowedshare
-        fromId = expenseDetails.friendId
-        toId = expenseDetails.userId
-    } else if (expenseDetails.userpaid > 0 && expenseDetails.friendpaid > 0) {
-        owes = expenseDetails.userowedshare - expenseDetails.friendpaid
-        fromId = expenseDetails.friendId
-        toId = expenseDetails.userId
-    }
-    else if (expenseDetails.userpaid === expenseDetails.friendpaid) {
-        owes = 0
-        fromId = expenseDetails.userId
-        toId = expenseDetails.friendId
-    }
-    else if (expenseDetails.userpaid + expenseDetails.friendpaid === expenseDetails.amount) {
-        if (expenseDetails.userpaid > expenseDetails.friendpaid) {
-            fromId = expenseDetails.friendId
-            toId = expenseDetails.userId
-        }
-        else {
-            fromId = expenseDetails.userId
-            toId = expenseDetails.friendId
-        }
-        owes = (expenseDetails.userpaid - expenseDetails.friendpaid) / 2
-    }
-    const findudata = await db.collection("users").get()
-        .then((snapshot) => {
-            snapshot.docs.forEach((doc) => {
-                // console.log(doc.id)
-                if (doc.id === expenseDetails.userId) {
-                    data = doc.data()
-                }
-                if (doc.id === expenseDetails.friendId) {
-                    friendData = doc.data()
-                }
-            })
-        })
-    let updateUserdocument = await db.collection('users').doc(expenseDetails.userId).update({
-        expenses: [...data.expenses, {
-            id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,
-            repayments: [{ from: fromId, to: toId, amount: Math.abs(owes) }]
-        }],
-        totalOwed: data.totalOwed + owes,
-        // totalOwe : data.totalOwe 
-        totalBalance: data.totalOwed + owes - data.totalOwe,
-        friends: data.friends.map(friend => {
-            if (friend.id === parseInt(expenseDetails.friendId)) {
-                friend.balance += owes
-                return friend
-            }
-            return friend
-        })
-    })
-    console.log('user udated')
-    let updateFriendDocument = await db.collection('users').doc(expenseDetails.friendId).update({
-        expenses: [...data.expenses, {
-            id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,
-            repayments: [{ from: fromId, to: toId, amount: owes }]
-        }],
-        totalOwe: friendData.totalOwe + owes,
-        totalBalance: friendData.totalOwed - (friendData.totalOwe + owes),
-        friends: friendData.friends.map(friend => {
-            if (friend.id === parseInt(expenseDetails.userId)) {
-                friend.balance -= owes
-                return friend
-            }
-            return friend
-        })
-    })
-        .catch(err => console.log(err))
-    const expenses = await db.collection('users').doc(expenseDetails.userId).get()
-        .then(doc => {
-            return doc.data()
-            // res.status(200).send(doc.data().expenses)
-        });
-    return expenses
-}
+// async function addExpense(expenseDetails) {
+//     var data;
+//     var friendData;
+//     var fromId;
+//     var toId;
+//     var amount
+//     if (expenseDetails.userpaid > 0 && expenseDetails.friendpaid === 0) {
+//         fromId = expenseDetails.friendId
+//         toId = expenseDetails.userId
+//         amount = expenseDetails.userpaid - expenseDetails.userowedshare
+//     } else if (expenseDetails.userpaid > 0 && expenseDetails.friendpaid > 0) {
+//         if (expenseDetails.userpaid > expenseDetails.userowedshare) {
+//             fromId = expenseDetails.friendId
+//             toId = expenseDetails.userId
+//             amount = expenseDetails.userpaid - expenseDetails.userowedshare
+//         } else if (expenseDetails.userpaid < expenseDetails.userowedshare) {
+//             fromId = expenseDetails.userId
+//             toId = expenseDetails.friendId
+//             amount = expenseDetails.friendowedShare
+//         } else {
+//             fromId = expenseDetails.userId
+//             toId = expenseDetails.friendId
+//             amount = expenseDetails.userowedshare - expenseDetails.userpaid
+//         }
+//     } else if (expenseDetails.userpaid === 0 && expenseDetails.friendpaid > 0) {
+//         fromId = expenseDetails.userId
+//         toId = expenseDetails.friendId
+//         amount = expenseDetails.friendpaid - expenseDetails.friendowedShare
+//     }
+
+//     console.log('repayment ' + fromId + 'to ' + toId + 'amount', amount)
+//     console.log(fromId)
+//     console.log(toId)
+//     console.log(amount)
+//     const findudata = await db.collection("users").get()
+//         .then((snapshot) => {
+//             snapshot.docs.forEach((doc) => {
+//                 // console.log(doc.id)
+//                 if (doc.id === expenseDetails.userId) {
+//                     data = doc.data()
+//                 }
+//                 if (doc.id === expenseDetails.friendId) {
+//                     friendData = doc.data()
+//                 }
+//             })
+//         })
+//     if ((fromId === expenseDetails.friendId) && (toId === expenseDetails.userId)) {
+//         let updateUserdocument = await db.collection('users').doc(expenseDetails.userId).update({
+//             expenses: [...data.expenses, {
+//                 id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,
+//                 repayments: [{ from: fromId, to: toId, amount: Math.abs(amount) }]
+//             }],
+//             totalOwed: Math.abs(data.totalOwed += amount),
+//             totalOwe: data.totalOwe,
+//             totalBalance: data.totalBalance + (amount),
+//             friends: data.friends.map(friend => {
+//                 if (friend.id === parseInt(expenseDetails.friendId)) {
+//                     friend.balance += (amount)
+//                     return friend
+//                 }
+//                 return friend
+//             })
+//         })
+//         let updateFriendDocument = await db.collection('users').doc(expenseDetails.friendId).update({
+//             expenses: [...data.expenses, {
+//                 id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,
+//                 repayments: [{ from: fromId, to: toId, amount: Math.abs(amount) }]
+//             }],
+//             totalOwe: Math.abs(friendData.totalOwe -= amount),
+//             totalOwed: friendData.totalOwed,
+//             totalBalance: friendData.totalBalance - (amount),
+//             friends: friendData.friends.map(friend => {
+//                 if (friend.id === parseInt(expenseDetails.userId)) {
+//                     friend.balance -= amount
+//                     return friend
+//                 }
+//                 return friend
+//             })
+//         })
+//     } else {
+//         let updateUserdocument = await db.collection('users').doc(expenseDetails.userId).update({
+//             expenses: [...data.expenses, {
+//                 id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,
+//                 repayments: [{ from: fromId, to: toId, amount: Math.abs(amount) }]
+//             }],
+//             totalOwe: Math.abs(data.totalOwe -= amount),
+//             totalOwed: data.totalOwed,
+//             totalBalance: data.totalBalance - (amount),
+//             friends: data.friends.map(friend => {
+//                 if (friend.id === parseInt(expenseDetails.friendId)) {
+//                     friend.balance -= (amount)
+//                     return friend
+//                 }
+//                 return friend
+//             })
+//         })
+//         let updateFriendDocument = await db.collection('users').doc(expenseDetails.friendId).update({
+//             expenses: [...data.expenses, {
+//                 id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,
+//                 repayments: [{ from: fromId, to: toId, amount: Math.abs(amount) }]
+//             }],
+//             totalOwed: friendData.totalOwed += amount,
+//             totalOwe: friendData.totalOwe,
+//             totalBalance: friendData.totalBalance + (amount),
+//             friends: friendData.friends.map(friend => {
+//                 if (friend.id === parseInt(expenseDetails.userId)) {
+//                     friend.balance += amount
+//                     return friend
+//                 }
+//                 return friend
+//             })
+//         })
+//     }
+//     console.log('user udated')
+
+//     const expenses = await db.collection('users').doc(expenseDetails.userId).get()
+//         .then(doc => {
+//             return doc.data()
+//             // res.status(200).send(doc.data().expenses)
+//         });
+//     return expenses
+// }
 
 
 async function settleUp(settleupDetails) {
-    // var expenseId = 5
-    // var userId = '1'
-    // var userpaid = 0
-    // var userowedshare = 25
-    // var friendId = '2'
-    // var friendpaid = 25
-    // var friendowedShare = 0
-    // var amount = 25
     var data;
     var owes;
     var friendData;
@@ -305,101 +323,90 @@ async function settleUp(settleupDetails) {
 
 }
 
-async function addExpense2(expenseDetails) {
-    var data;
-    var owes;
-    var friendsData = [];
-    var fromId;
-    var toId;
-    var repayment = []
-    var totalOwes = 0
-    expenseDetails.friends.forEach(expenseDetail => {
-        if (expenseDetails.userpaid === 0 && expenseDetail.paidShare > 0) {
-            owes = expenseDetail.owedShare
-            fromId = expenseDetails.userId
-            toId = expenseDetail.Id
-        } else if (expenseDetails.userpaid > 0 && expenseDetail.paidShare === 0) {
-            owes = expenseDetails.userowedshare
-            fromId = expenseDetail.Id
-            toId = expenseDetails.userId
-        } else if (expenseDetails.userpaid === expenseDetails.paidShare) {
-            owes = 0
-            fromId = expenseDetails.userId
-            toId = expenseDetail.Id
-        }
-        else if (expenseDetails.userpaid + expenseDetail.paidShare === expenseDetails.amount) {
-            fromId = expenseDetail.Id
-            toId = expenseDetails.userId
-            owes = 0
-        } else if (expenseDetails.userpaid > 0 && expenseDetail.paidShare > 0) {
-            fromId = expenseDetail.Id
-            toId = expenseDetails.userId
-            owes = expenseDetail.owedShare - expenseDetail.paidShare
+async function addExpenseGroup(expenseDetails) {
+    // expenseDetails.friends.forEach(expenseDetail => {
+    //     if (expenseDetails.userpaid > 0 && expenseDetail.paidShare === 0) {
+    //         fromId = expenseDetail.id
+    //         toId = expenseDetails.userid
+    //         amount = expenseDetails.userpaid - expenseDetail.owedShare
+    //     } else if (expenseDetails.userpaid > 0 && expenseDetail.paidShare > 0) {
+    //         if (expenseDetails.userpaid > expenseDetail.owedShare) {
+    //             fromId = expenseDetail.id
+    //             toId = expenseDetails.userid
+    //             amount = expenseDetails.userpaid - expenseDetail.owedShare
+    //         } else if (expenseDetails.userpaid < expenseDetail.owedShare) {
+    //             fromId = expenseDetails.userid
+    //             toId = expenseDetail.id
+    //             amount = expenseDetail.owedShare
+    //         } else {
+    //             fromId = expenseDetails.userid
+    //             toId = expenseDetail.id
+    //             amount = expenseDetails.userowedshare - expenseDetail.paidShare
+    //         }
+    //     } else if (expenseDetails.userpaid === 0 && expenseDetail.paidShare > 0) {
+    //         fromId = expenseDetails.userid
+    //         toId = expenseDetail.id
+    //         amount = expenseDetail.paidShare - expenseDetail.owedShare
+    //     }
+    //     repayment.push({ from: fromId, to: toId, amount: Math.abs(amount) })
 
-        }
-        repayment.push({ from: fromId, to: toId, amount: Math.abs(owes) })
-
-    })
-    console.log(repayment)
-    const findudata = await db.collection("users").get()
+    // })
+    // console.log(repayment)
+    db.collection("users").get()
         .then((snapshot) => {
+            // console.log(expenseDetails.friends)
+            let friendarr = []
             snapshot.docs.forEach((doc) => {
                 // console.log(doc.id)
-                if (doc.id === expenseDetails.userId) {
-                    data = doc.data()
+                var ispresent = expenseDetails.friends.some((function (friend) { return friend.id === doc.id }))
+                // console.log(ispresent)
+
+                if (expenseDetails.friends.some((function (friend) { return friend.id === doc.id })) || doc.id === expenseDetails.userid) {
+                    console.log(doc.id)
+                    var data = newExpense(expenseDetails, doc.data(), doc.id)
+                    db.collection("users").doc(doc.id).update({
+                        ...data
+                    })
+                    console.log(data)
                 }
-                expenseDetails.friends.forEach(friend => {
-                    if (doc.id === friend.Id) {
-                        friendsData.push(doc.data().friends)
-                    }
-                })
             })
         })
-    // return friendsData
-    // let updateUserdocument = await db.collection('users').doc(expenseDetails.userId).update({
-    //     expenses: [...data.expenses, {
-    //         id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,
-    //         repayments: repayment
-    //     }],
-    //     totalOwed: data.totalOwed + (owes * friendsData.length),
-    //     totalBalance: data.totalOwed + (owes * friendsData.length) - data.totalOwe,
-    //     friends: data.friends.map(friend => {
-    //         if (friend.id === parseInt(expenseDetails.friendId)) {
-    //             friend.balance += owes
-    //             return friend
-    //         }
-    //         return friend
-    //     })
-    // })
-    // console.log('user udated')
-    expenseDetails.friends.forEach(async friendfullData => {
-        // friendsData.forEach(friend => {
-        //     console.log(friend)
-        //     // friend.balance += owes
-        // })
-        console.log(friendfullData)
-        // console.log(friendsData)
+    function newExpense(bill, data, id) {
+        data.expenses.unshift(bill);
+        const n = bill.friends.length;
+        const split = bill.amount / (n + 1);
+        if (bill.friends.some((function (frnd) { return frnd.id === id }))) {
+            data.friends.forEach((friend) => {
+                console.log(friend.id, bill.userid)
+                if (friend.id === parseInt(bill.paidbyId)) {
+                    friend.balance -= split;
+                }
+            })
+        }
+        else {
+            data.friends.forEach((friend) => {
+                if (bill.friends.some((function (frnd) { return parseInt(frnd.id) === friend.id }))) {
+                    friend.balance += split;
+                }
+            })
+        }
+        data.friends.forEach(frnd => {
+            // console.log(frnd)
+            if (frnd.balance > 0) {
+                data.totalOwed += frnd.balance;
+                data.totalBalance += frnd.balance;
+            }
+            if (frnd.balance < 0) {
+                data.totalOwe -= frnd.balance;
+                data.totalBalance += frnd.balance;
+            }
+        })
+        // console.log(data)
 
-        // let updateFriendDocument = await db.collection('users').doc(friendfullData.Id).update({
-        //     expenses: [...data.expenses, {
-        //         id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,
-        //         repayments: repayment
-        //     }],
-        //     totalOwe: friendData.totalOwe + owes,
-        //     totalBalance: friendData.totalOwed - (friendData.totalOwe + owes),
-        //     friends: friendData.friends.map(friend => {
-        //         if (friend.id === parseInt(expenseDetails.userId)) {
-        //             friend.balance -= owes
-        //             return friend
-        //         }
-        //         return friend
-        //     })
-        // })
-        //     .catch(err => console.log(err))
+        return data
+    }
 
-    })
-
-    const expenses = await db.collection('users').doc(expenseDetails.userId).get()
+    const expenses = await db.collection('users').doc(expenseDetails.userid).get()
         .then(doc => {
             return doc.data()
             // res.status(200).send(doc.data().expenses)
@@ -415,7 +422,7 @@ module.exports = {
     addFriend,
     deleteFriend,
     getAllusers,
-    addExpense,
+    // addExpense,
     settleUp,
-    addExpense2
+    addExpenseGroup
 }
