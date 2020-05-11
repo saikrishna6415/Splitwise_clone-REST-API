@@ -160,7 +160,7 @@ async function settleUp(settleupDetails) {
     let updateUserdocument = await db.collection('users').doc(settleupDetails.userId).update({
         expenses: [...data.expenses, {
             id: settleupDetails.expenseId, amount: settleupDetails.amount, description: 'payment',
-            repayments: [{ from: fromId, to: toId, amount: Math.abs(owes) }]
+            // repayments: [{ from: fromId, to: toId, amount: Math.abs(owes) }]
         }],
         totalOwed: data.totalOwed - owes,
         totalBalance: data.totalOwed - (data.totalOwe + owes),
@@ -176,7 +176,7 @@ async function settleUp(settleupDetails) {
     let updateFriendDocument = await db.collection('users').doc(settleupDetails.friendId).update({
         expenses: [...data.expenses, {
             id: settleupDetails.expenseId, amount: settleupDetails.amount, description: 'payment',
-            repayments: [{ from: fromId, to: toId, amount: Math.abs(owes) }]
+            // repayments: [{ from: fromId, to: toId, amount: Math.abs(owes) }]
         }],
         totalOwe: friendData.totalOwe - owes,
         totalBalance: friendData.totalOwed + (friendData.totalOwe - owes),
@@ -199,51 +199,67 @@ async function settleUp(settleupDetails) {
 }
 
 async function addExpenseGroup(expenseDetails) {
-    var expenseData;
+    var alldetails = [{ paidShare: expenseDetails.userpaid, id: expenseDetails.userid, owedShare: expenseDetails.userowedshare }]
+
+    expenseDetails.friends.forEach(friend => {
+        alldetails.push({ paidShare: friend.paidShare, id: friend.id, owedShare: friend.owedShare })
+    })
+    for (let i = 0; i < alldetails.length; i++) {
+        alldetails[i].balance = alldetails[i].paidShare - alldetails[i].owedShare
+    }
+    const expenseInfo = { id: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description }
     const addexpense = await db.collection("users").get()
         .then((snapshot) => {
-            // console.log(expenseDetails.friends)
-            let friendarr = []
             snapshot.docs.forEach((doc) => {
-                // console.log(doc.id)
-                var ispresent = expenseDetails.friends.some((function (friend) { return friend.id === doc.id }))
-                // console.log(ispresent)
-
-                if (expenseDetails.friends.some((function (friend) { return friend.id === doc.id })) || doc.id === expenseDetails.userid) {
-                    console.log(doc.id)
-                    var data = newExpense(expenseDetails, doc.data(), doc.id)
+                if (alldetails.some((function (user) { return user.id === doc.id }))) {
+                    // console.log(doc.id)
+                    var data = newExpense(expenseInfo, alldetails, doc.data(), doc.id)
                     db.collection("users").doc(doc.id).update({
-                        ...data
+                        ...data,
+                        // expenses: [...data.expenses, expenseInfo]
                     })
                     console.log(data)
                 }
             })
         }).then(() => {
-            expenseData =  db.collection('users').doc(expenseDetails.userid).get()
+            expenseData = db.collection('users').doc(expenseDetails.userid).get()
                 .then(doc => {
                     return doc.data()
                     // res.status(200).send(doc.data().expenses)
                 });
         })
-    function newExpense(bill, data, id) {
-        data.expenses.unshift(bill);
-        const n = bill.friends.length;
-        const split = bill.amount / (n + 1);
-        if (bill.friends.some((function (frnd) { return frnd.id === id }))) {
-            data.friends.forEach((friend) => {
-                console.log(friend.id, bill.userid)
-                if (friend.id === parseInt(bill.paidbyId)) {
-                    friend.balance -= split;
+    function newExpense(expense, bill, data, id) {
+        console.log(expense)
+        data.expenses.unshift(expense);
+        // const n = bill.friends.length;
+        if (alldetails.some((user) => {
+            if (user.id === id)
+                return user
+        })) {
+
+            for (let i = 0; i < bill.length; i++) {
+                if ((bill[i].id) === id) {
+                    console.log("amount", bill[i].paidShare - bill[i].owedShare)
+                    // var amount = 
+                }
+            }
+            data.friends.forEach(friend => {
+                var amount = 0
+                for (let i = 0; i < bill.length; i++) {
+                    if (parseInt(bill[i].id) === friend.id) {
+                        friend.balance -= bill[i].paidShare - bill[i].owedShare
+                    }
                 }
             })
+
+            console.log('ext')
+
         }
-        else {
-            data.friends.forEach((friend) => {
-                if (bill.friends.some((function (frnd) { return parseInt(frnd.id) === friend.id }))) {
-                    friend.balance += split;
-                }
-            })
-        }
+        data.totalOwed = 0
+        data.totalBalance = 0
+        data.totalOwe = 0
+        // data.expenses = [...data.expenses, expenseInfo]
+
         data.friends.forEach(frnd => {
             // console.log(frnd)
             if (frnd.balance > 0) {
@@ -259,10 +275,82 @@ async function addExpenseGroup(expenseDetails) {
 
         return data
     }
+    const expenses = await db.collection('users').doc(expenseDetails.userid).get()
+        .then(doc => {
+            return doc.data()
+            // res.status(200).send(doc.data().expenses)
+        });
+    // console.log(expenses)
+    return expenses
+    // var expenseData;
+    // const addexpense = await db.collection("users").get()
+    //     .then((snapshot) => {
+    //         // console.log(expenseDetails.friends)
+    //         let friendarr = []
+    //         snapshot.docs.forEach((doc) => {
+    //             // console.log(doc.id)
+    //             var ispresent = expenseDetails.friends.some((function (friend) { return friend.id === doc.id }))
+    //             // console.log(ispresent)
 
-    return expenseData
+    //             if (expenseDetails.friends.some((function (friend) { return friend.id === doc.id })) || doc.id === expenseDetails.userid) {
+    //                 console.log(doc.id)
+    //                 var data = newExpense(expenseDetails, doc.data(), doc.id)
+    //                 db.collection("users").doc(doc.id).update({
+    //                     ...data
+    //                 })
+    //                 console.log(data)
+    //             }
+    //         })
+    //     }).then(() => {
+    //         expenseData = db.collection('users').doc(expenseDetails.userid).get()
+    //             .then(doc => {
+    //                 return doc.data()
+    //                 // res.status(200).send(doc.data().expenses)
+    //             });
+    //     })
+    // function newExpense(bill, data, id) {
+    //     data.expenses.unshift(bill);
+    //     const n = bill.friends.length;
+    //     const split = bill.amount / (n + 1);
+    //     if (bill.friends.some((function (frnd) { return frnd.id === id }))) {
+    //         data.friends.forEach((friend) => {
+    //             console.log(friend.id, bill.userid)
+    //             if (friend.id === parseInt(bill.paidbyId)) {
+    //                 friend.balance -= split;
+    //             }
+    //         })
+    //     }
+    //     else {
+    //         data.friends.forEach((friend) => {
+    //             if (bill.friends.some((function (frnd) { return parseInt(frnd.id) === friend.id }))) {
+    //                 friend.balance += split;
+    //             }
+    //         })
+    //     }
+    //     data.friends.forEach(frnd => {
+    //         // console.log(frnd)
+    //         if (frnd.balance > 0) {
+    //             data.totalOwed += frnd.balance;
+    //             data.totalBalance += frnd.balance;
+    //         }
+    //         if (frnd.balance < 0) {
+    //             data.totalOwe -= frnd.balance;
+    //             data.totalBalance += frnd.balance;
+    //         }
+    //     })
+    //     // console.log(data)
+
+    //     return data
+    // }
+
+    // return expenseData
 }
 
+
+async function dummycal(expenseDetails) {
+
+
+}
 
 
 module.exports = {
@@ -271,7 +359,8 @@ module.exports = {
     addFriend,
     deleteFriend,
     getAllusers,
-    // addExpense,
+    // addExpense, 
     settleUp,
-    addExpenseGroup
+    addExpenseGroup,
+    //  dummycal
 }
