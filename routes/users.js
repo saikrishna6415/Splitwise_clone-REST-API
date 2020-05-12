@@ -89,6 +89,16 @@ router.post('/settleup', async function (req, res) {
     .catch(err => console.log(err))
 })
 
+router.delete('/deleteexpense', async function (req, res) {
+  var expenseDetails = req.body
+  console.log(expenseDetails)
+  const data = database.deleteExpense(expenseDetails);
+  data.then(result => {
+    // console.log(result)
+    res.status(200).send(result)
+  })
+    .catch(err => console.log(err))
+})
 
 
 // router.post('/addexpense', async function (req, res) {
