@@ -233,9 +233,53 @@ async function addExpenseGroup(expenseDetails, userId) {
                 if (alldetails.some((function (user) { return user.id === doc.id }))) {
                     // console.log(doc.id)
                     var data = newExpense(expenseInfo, alldetails, doc.data(), doc.id)
+                    function newExpense(expense, bill, data, id) {
+                        // console.log(expense)
+                        data.expenses.unshift(expense);
+                        // const n = bill.friends.length;
+                        if (alldetails.some((user) => {
+                            if (user.id === id)
+                                return user
+                        })) {
+                            for (let i = 0; i < bill.length; i++) {
+                                if ((bill[i].id) === id) {
+                                    // console.log("amount", bill[i].paidShare - bill[i].owedShare)
+                                }
+                            }
+                            data.friends.forEach(friend => {
+                                var amount = 0
+                                for (let i = 0; i < bill.length; i++) {
+                                    if (parseInt(bill[i].id) === friend.id) {
+                                        friend.balance -= bill[i].paidShare - bill[i].owedShare
+                                    }
+                                }
+                            })
+
+                            console.log('ext')
+
+                        }
+                        data.totalOwed = 0
+                        data.totalBalance = 0
+                        data.totalOwe = 0
+                        // data.expenses = [...data.expenses, expenseInfo]
+
+                        data.friends.forEach(frnd => {
+                            // console.log(frnd)
+                            if (frnd.balance > 0) {
+                                data.totalOwed += frnd.balance;
+                                data.totalBalance += frnd.balance;
+                            }
+                            if (frnd.balance < 0) {
+                                data.totalOwe -= frnd.balance;
+                                data.totalBalance += frnd.balance;
+                            }
+                        })
+                        // console.log(data)
+
+                        return data
+                    }
                     db.collection("users").doc(doc.id).update({
                         ...data,
-                        // expenses: [...data.expenses, expenseInfo]
                     })
                     // console.log(data)
                 }
@@ -244,65 +288,11 @@ async function addExpenseGroup(expenseDetails, userId) {
             expenseData = db.collection('users').doc(expenseDetails.userid).get()
                 .then(doc => {
                     return doc.data()
-                    // res.status(200).send(doc.data().expenses)
                 });
             return expenseData
         })
     return addexpense
 
-    function newExpense(expense, bill, data, id) {
-        // console.log(expense)
-        data.expenses.unshift(expense);
-        // const n = bill.friends.length;
-        if (alldetails.some((user) => {
-            if (user.id === id)
-                return user
-        })) {
-
-            for (let i = 0; i < bill.length; i++) {
-                if ((bill[i].id) === id) {
-                    console.log("amount", bill[i].paidShare - bill[i].owedShare)
-                    // var amount = 
-                }
-            }
-            data.friends.forEach(friend => {
-                var amount = 0
-                for (let i = 0; i < bill.length; i++) {
-                    if (parseInt(bill[i].id) === friend.id) {
-                        friend.balance -= bill[i].paidShare - bill[i].owedShare
-                    }
-                }
-            })
-
-            console.log('ext')
-
-        }
-        data.totalOwed = 0
-        data.totalBalance = 0
-        data.totalOwe = 0
-        // data.expenses = [...data.expenses, expenseInfo]
-
-        data.friends.forEach(frnd => {
-            // console.log(frnd)
-            if (frnd.balance > 0) {
-                data.totalOwed += frnd.balance;
-                data.totalBalance += frnd.balance;
-            }
-            if (frnd.balance < 0) {
-                data.totalOwe -= frnd.balance;
-                data.totalBalance += frnd.balance;
-            }
-        })
-        // console.log(data)
-
-        return data
-    }
-    // const expenses = await db.collection('users').doc(userId).get()
-    //     .then(doc => {
-    //         return doc.data()
-    //         // res.status(200).send(doc.data().expenses)
-    //     });
-    // return expenses
 }
 
 async function deleteExpense(expenseDetails, user) {
@@ -314,11 +304,51 @@ async function deleteExpense(expenseDetails, user) {
                 if (expenseInfo.some((function (user) { return user.id === doc.id }))) {
                     // console.log(doc.id)
                     var data = newExpense(expenseDetails, expenseInfo, doc.data(), doc.id)
+                    function newExpense(expense, bill, data, id) {
+                        const index = data.expenses.findIndex(Item => Item.id === expense.expenseId);
+                        data.expenses.splice(index, 1);
+                        if (expenseInfo.some((user) => {
+                            if (user.id === id)
+                                return user
+                        })) {
+
+                            for (let i = 0; i < bill.length; i++) {
+                                if ((bill[i].id) === id) {
+                                    // console.log("amount", bill[i].paidShare - bill[i].owedShare)
+                                    var amount = bill[i].paidShare - bill[i].owedShare
+                                }
+                            }
+                            data.friends.forEach(friend => {
+                                // var amount = 0
+
+                                for (let i = 0; i < bill.length; i++) {
+                                    if (parseInt(bill[i].id) === friend.id) {
+                                        friend.balance += bill[i].paidShare - bill[i].owedShare
+                                    }
+                                }
+                            })
+                            // console.log('ext')
+                        }
+                        data.totalOwed = 0
+                        data.totalBalance = 0
+                        data.totalOwe = 0
+                        data.friends.forEach(frnd => {
+                            // console.log(frnd)
+                            if (frnd.balance > 0) {
+                                data.totalOwed += frnd.balance;
+                                data.totalBalance += frnd.balance;
+                            }
+                            if (frnd.balance < 0) {
+                                data.totalOwe -= frnd.balance;
+                                data.totalBalance += frnd.balance;
+                            }
+                        })
+                        // console.log(data)
+                        return data
+                    }
                     db.collection("users").doc(doc.id).update({
                         ...data,
-                        // expenses: [...data.expenses, expenseInfo]
                     })
-                    // console.log(data)
                 }
             })
         })
@@ -331,65 +361,6 @@ async function deleteExpense(expenseDetails, user) {
             return expenseData
         })
     return deleteexpense
-
-    function newExpense(expense, bill, data, id) {
-        const index = data.expenses.findIndex(Item => Item.id === expense.expenseId);
-        // console.log(index)
-        data.expenses.splice(index, 1);
-
-        // console.log(expense)
-        // data.expenses.unshift(expense);
-        // const n = bill.friends.length;
-        if (expenseInfo.some((user) => {
-            if (user.id === id)
-                return user
-        })) {
-
-            for (let i = 0; i < bill.length; i++) {
-                if ((bill[i].id) === id) {
-                    // console.log("amount", bill[i].paidShare - bill[i].owedShare)
-                    var amount = bill[i].paidShare - bill[i].owedShare
-                }
-            }
-            data.friends.forEach(friend => {
-                // var amount = 0
-
-                for (let i = 0; i < bill.length; i++) {
-                    if (parseInt(bill[i].id) === friend.id) {
-                        friend.balance += bill[i].paidShare - bill[i].owedShare
-                    }
-                }
-            })
-
-            // console.log('ext')
-
-        }
-        data.totalOwed = 0
-        data.totalBalance = 0
-        data.totalOwe = 0
-        // data.expenses = [...data.expenses, expenseInfo]
-
-        data.friends.forEach(frnd => {
-            // console.log(frnd)
-            if (frnd.balance > 0) {
-                data.totalOwed += frnd.balance;
-                data.totalBalance += frnd.balance;
-            }
-            if (frnd.balance < 0) {
-                data.totalOwe -= frnd.balance;
-                data.totalBalance += frnd.balance;
-            }
-        })
-        // console.log(data)
-
-        return data
-    }
-    // const expenses = await db.collection('users').doc(user).get()
-    //     .then(doc => {
-    //         return doc.data()
-    //         // res.status(200).send(doc.data().expenses)
-    //     });
-    // return expenses
 }
 
 
