@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 // var admin = require("firebase-admin");
 var database = require('../models/db')
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
 // var serviceAccount = require('../database/database.json');
 
@@ -11,8 +13,49 @@ var database = require('../models/db')
 // });
 
 // const db = admin.firestore()
+// Extended: https://swagger.io/specification/#infoObject
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      title: "Customer API",
+      description: "Customer API Information",
+      contact: {
+        name: "Amazing Developer"
+      },
+      servers: ["http://localhost:3000"]
+    }
+  },
+  // ['.routes/*.js']
+  apis: ["users.js"]
+};
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+router.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
+
+// Routes
+/**
+ * @swagger
+ * /:
+ *  get:
+ *    description: Use to request all users
+ *    responses:
+ *      '200':
+ *        description: A successful response
+ *         schema:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               description: id
+ *               email:
+ *                 type: string
+ *              expenses:
+ *                  type:array
+ *              friends:
+ *                type:array
+ *            
+ */
 router.get('/', function (req, res) {
   const data = database.getAllusers()
   data.then(result => {
@@ -23,8 +66,8 @@ router.get('/', function (req, res) {
 });
 
 
-router.get('/:id', function (req, res) {
-  var id = req.params.id
+router.get('/:userid', function (req, res) {
+  var id = req.params.userid
   // console.log(id)
   const data = database.getUser(id);
   data.then(result => {
@@ -34,9 +77,9 @@ router.get('/:id', function (req, res) {
     .catch(err => console.log(err))
 });
 
-router.get('/getfriends/:id', async function (req, res) {
+router.get('/:userid/getfriends', async function (req, res) {
   // id = current user 
-  let id = req.params.id
+  let id = req.params.userid
   // console.log(id)
   const data = database.getFriends(id);
   data.then(result => {
@@ -46,9 +89,10 @@ router.get('/getfriends/:id', async function (req, res) {
     .catch(err => console.log(err))
 });
 
-router.post('/addfriend', async function (req, res) {
+router.post('/:userid/addfriend', async function (req, res) {
+  var user = req.params.userid
   var friendDetails = req.body
-  const data = database.addFriend(friendDetails);
+  const data = database.addFriend(friendDetails, user);
   data.then(result => {
     // console.log(result)
     res.status(200).send(result)
@@ -57,9 +101,10 @@ router.post('/addfriend', async function (req, res) {
 });
 
 
-router.delete('/deletefriend/:id', async function (req, res) {
+router.delete('/:userid/deletefriend/:id', async function (req, res) {
+  var user = req.params.userid
   var friendToDel = req.params.id
-  const data = database.deleteFriend(friendToDel);
+  const data = database.deleteFriend(friendToDel, user);
   data.then(result => {
     // console.log(result)
     res.status(200).send(result)
@@ -68,9 +113,10 @@ router.delete('/deletefriend/:id', async function (req, res) {
 })
 
 
-router.post('/addexpense', async function (req, res) {
+router.post('/:userid/addexpense', async function (req, res) {
+  var user = req.params.userid
   var expenseDetails = req.body
-  const data = database.addExpenseGroup(expenseDetails);
+  const data = database.addExpenseGroup(expenseDetails, user);
   data.then(result => {
     // console.log(result)
     res.status(200).send(result)
@@ -79,9 +125,10 @@ router.post('/addexpense', async function (req, res) {
 })
 
 
-router.post('/settleup', async function (req, res) {
+router.post('/:userid/settleup', async function (req, res) {
   var settleupDetails = req.body
-  const data = database.settleUp(settleupDetails);
+  var user = req.params.userid
+  const data = database.settleUp(settleupDetails,user);
   data.then(result => {
     // console.log(result)
     res.status(200).send(result)
@@ -89,10 +136,11 @@ router.post('/settleup', async function (req, res) {
     .catch(err => console.log(err))
 })
 
-router.delete('/deleteexpense', async function (req, res) {
+router.delete('/:userid/deleteexpense', async function (req, res) {
+  var user = req.params.userid
   var expenseDetails = req.body
   console.log(expenseDetails)
-  const data = database.deleteExpense(expenseDetails);
+  const data = database.deleteExpense(expenseDetails,user);
   data.then(result => {
     // console.log(result)
     res.status(200).send(result)
