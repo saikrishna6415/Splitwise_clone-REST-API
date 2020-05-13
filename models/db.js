@@ -80,14 +80,16 @@ async function addFriend(friendDetails, id) {
                     friends: [...newFriendDetails.friends, { id: parseInt(userDetails.id), name: userDetails.name, email: userDetails.email, balance: 0 }]
                 })
             };
+        }).then(() => {
+            const newFriend = db.collection('users').doc(user).get()
+                .then(doc => {
+                    return doc.data().friends
+                    // res.status(200).send(doc.data())
+                });
+            return newFriend
+
         })
-        .catch(err => console.log(err))
-    const newFriend = await db.collection('users').doc(user).get()
-        .then(doc => {
-            return doc.data()
-            // res.status(200).send(doc.data())
-        });
-    return newFriend
+    return friendData
 
 }
 
@@ -115,14 +117,17 @@ async function deleteFriend(friendDetails, id) {
                     console.log('friend deleted')
                 }
             })
+        }).then(() => {
+            const deletedFriend = db.collection('users').doc(userId).get()
+                .then(doc => {
+                    // console.log(doc.data)
+                    // res.status(200).send(doc.data())
+                    return doc.data().friends
+                });
+            return deletedFriend
+
         })
-    const deletedFriend = await db.collection('users').doc(userId).get()
-        .then(doc => {
-            // console.log(doc.data)
-            // res.status(200).send(doc.data())
-            return doc.data()
-        });
-    return deletedFriend
+    return friendtodelete
 }
 
 async function settleUp(settleupDetails, userId) {
@@ -160,7 +165,17 @@ async function settleUp(settleupDetails, userId) {
                 //     friendData = doc.data()
                 // }
             })
+        }).then(() => {
+            const settle = db.collection('users').doc(userId).get()
+                .then(doc => {
+                    return doc.data().expenses
+                    // res.status(200).send(doc.data().expenses)
+                });
+            return settle
+
         })
+    return findudata
+
     function settleUp(settle, data, id) {
         if (settle.friendpaid > 0 && settle.userpaid === 0) {
             var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.friendId, toId: settle.userId, friendpaid: settle.friendpaid, amount: settle.amount }
@@ -193,12 +208,12 @@ async function settleUp(settleupDetails, userId) {
 
         return data
     }
-    const settle = await db.collection('users').doc(userId).get()
-        .then(doc => {
-            return doc.data().expenses
-            // res.status(200).send(doc.data().expenses)
-        });
-    return settle
+    // const settle = await db.collection('users').doc(userId).get()
+    //     .then(doc => {
+    //         return doc.data().expenses
+    //         // res.status(200).send(doc.data().expenses)
+    //     });
+    // return settle
 
 }
 
@@ -231,7 +246,10 @@ async function addExpenseGroup(expenseDetails, userId) {
                     return doc.data()
                     // res.status(200).send(doc.data().expenses)
                 });
+            return expenseData
         })
+    return addexpense
+
     function newExpense(expense, bill, data, id) {
         // console.log(expense)
         data.expenses.unshift(expense);
@@ -279,18 +297,18 @@ async function addExpenseGroup(expenseDetails, userId) {
 
         return data
     }
-    const expenses = await db.collection('users').doc(userId).get()
-        .then(doc => {
-            return doc.data()
-            // res.status(200).send(doc.data().expenses)
-        });
-    return expenses
+    // const expenses = await db.collection('users').doc(userId).get()
+    //     .then(doc => {
+    //         return doc.data()
+    //         // res.status(200).send(doc.data().expenses)
+    //     });
+    // return expenses
 }
 
-async function deleteExpense(expenseDetails,user) {
+async function deleteExpense(expenseDetails, user) {
     var expenseInfo = expenseDetails.payments
     // console.log(expenseInfo)
-    const addexpense = await db.collection("users").get()
+    const deleteexpense = await db.collection("users").get()
         .then((snapshot) => {
             snapshot.docs.forEach((doc) => {
                 if (expenseInfo.some((function (user) { return user.id === doc.id }))) {
@@ -304,13 +322,16 @@ async function deleteExpense(expenseDetails,user) {
                 }
             })
         })
-        // .then(() => {
-        //     expenseData = db.collection('users').doc(user).get()
-        //         .then(doc => {
-        //             return doc.data()
-        //             // res.status(200).send(doc.data().expenses)
-        //         });
-        // })
+        .then(() => {
+            expenseData = db.collection('users').doc(user).get()
+                .then(doc => {
+                    return doc.data()
+                    // res.status(200).send(doc.data().expenses)
+                });
+            return expenseData
+        })
+    return deleteexpense
+
     function newExpense(expense, bill, data, id) {
         const index = data.expenses.findIndex(Item => Item.id === expense.expenseId);
         // console.log(index)
@@ -363,12 +384,12 @@ async function deleteExpense(expenseDetails,user) {
 
         return data
     }
-    const expenses = await db.collection('users').doc(user).get()
-        .then(doc => {
-            return doc.data()
-            // res.status(200).send(doc.data().expenses)
-        });
-    return expenses
+    // const expenses = await db.collection('users').doc(user).get()
+    //     .then(doc => {
+    //         return doc.data()
+    //         // res.status(200).send(doc.data().expenses)
+    //     });
+    // return expenses
 }
 
 
