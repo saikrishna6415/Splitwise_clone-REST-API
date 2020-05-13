@@ -50,7 +50,7 @@ async function addFriend(friendDetails, id) {
             userDetails = doc.data()
             // console.log(userDetails)
         })
-    const friendData = await db.collection("users").get()
+    const friendData = db.collection("users").get()
         .then((snapshot) => {
             var status = true
             var flag = false
@@ -80,7 +80,8 @@ async function addFriend(friendDetails, id) {
                     friends: [...newFriendDetails.friends, { id: parseInt(userDetails.id), name: userDetails.name, email: userDetails.email, balance: 0 }]
                 })
             };
-        }).then(() => {
+        })
+        .then(() => {
             const newFriend = db.collection('users').doc(user).get()
                 .then(doc => {
                     return doc.data().friends
@@ -89,6 +90,16 @@ async function addFriend(friendDetails, id) {
             return newFriend
 
         })
+    // friendData.then(async () => {
+    // const newFriend = await db.collection('users').doc(user).get()
+    //     .then(doc => {
+    //         return doc.data().friends
+    //         // res.status(200).send(doc.data())
+    //     });
+    // console.log(newFriend)
+
+    // return newFriend
+    // // })
     return friendData
 
 }
@@ -117,7 +128,8 @@ async function deleteFriend(friendDetails, id) {
                     console.log('friend deleted')
                 }
             })
-        }).then(() => {
+        })
+        .then(() => {
             const deletedFriend = db.collection('users').doc(userId).get()
                 .then(doc => {
                     // console.log(doc.data)
@@ -128,6 +140,13 @@ async function deleteFriend(friendDetails, id) {
 
         })
     return friendtodelete
+    // const deletedFriend = db.collection('users').doc(userId).get()
+    //     .then(doc => {
+    //         // console.log(doc.data)
+    //         // res.status(200).send(doc.data())
+    //         return doc.data().friends
+    //     });
+    // return deletedFriend
 }
 
 async function settleUp(settleupDetails, userId) {
@@ -243,18 +262,28 @@ async function addExpenseGroup(expenseDetails, userId) {
                         })) {
                             for (let i = 0; i < bill.length; i++) {
                                 if ((bill[i].id) === id) {
-                                    // console.log("amount", bill[i].paidShare - bill[i].owedShare)
+                                    console.log("amount", bill[i].paidShare - bill[i].owedShare)
+                                    var amount = bill[i].paidShare - bill[i].owedShare
                                 }
                             }
-                            data.friends.forEach(friend => {
-                                var amount = 0
-                                for (let i = 0; i < bill.length; i++) {
-                                    if (parseInt(bill[i].id) === friend.id) {
-                                        friend.balance -= bill[i].paidShare - bill[i].owedShare
+                            var sortedBill = bill.sort((a, b) => a.paidShare - b.paidShare)
+                            maxpaid = parseInt(sortedBill[sortedBill.length - 1].id)
+                            if (parseInt(id) === maxpaid) {
+                                data.friends.forEach((friend) => {
+                                    for (let i = 0; i < bill.length; i++) {
+                                        if (parseInt(bill[i].id) === friend.id) {
+                                            friend.balance -= bill[i].paidShare - bill[i].owedShare
+                                        }
                                     }
-                                }
-                            })
 
+                                })
+                            } else {
+                                data.friends.forEach(friend => {
+                                    if (friend.id === maxpaid) {
+                                        friend.balance += amount;
+                                    }
+                                })
+                            }
                             console.log('ext')
 
                         }
@@ -274,18 +303,18 @@ async function addExpenseGroup(expenseDetails, userId) {
                                 data.totalBalance += frnd.balance;
                             }
                         })
-                        // console.log(data)
+                        console.log(data)
 
                         return data
                     }
                     db.collection("users").doc(doc.id).update({
                         ...data,
                     })
-                    // console.log(data)
+                    console.log(data)
                 }
             })
         }).then(() => {
-            expenseData = db.collection('users').doc(expenseDetails.userid).get()
+            expenseData = db.collection('users').doc(userId).get()
                 .then(doc => {
                     return doc.data()
                 });
@@ -318,15 +347,34 @@ async function deleteExpense(expenseDetails, user) {
                                     var amount = bill[i].paidShare - bill[i].owedShare
                                 }
                             }
-                            data.friends.forEach(friend => {
-                                // var amount = 0
-
-                                for (let i = 0; i < bill.length; i++) {
-                                    if (parseInt(bill[i].id) === friend.id) {
-                                        friend.balance += bill[i].paidShare - bill[i].owedShare
+                            var sortedBill = bill.sort((a, b) => a.paidShare - b.paidShare)
+                            maxpaid = parseInt(sortedBill[sortedBill.length - 1].id)
+                            console.log(maxpaid)
+                            if (parseInt(id) === maxpaid) {
+                                data.friends.forEach((friend) => {
+                                    for (let i = 0; i < bill.length; i++) {
+                                        if (parseInt(bill[i].id) === friend.id) {
+                                            friend.balance += bill[i].paidShare - bill[i].owedShare
+                                        }
                                     }
-                                }
-                            })
+
+                                })
+                            } else {
+                                data.friends.forEach(friend => {
+                                    if (friend.id === maxpaid) {
+                                        friend.balance -= amount;
+                                    }
+                                })
+                            }
+                            // data.friends.forEach(friend => {
+                            //     // var amount = 0
+
+                            //     for (let i = 0; i < bill.length; i++) {
+                            //         if (parseInt(bill[i].id) === friend.id) {
+                            //             friend.balance += bill[i].paidShare - bill[i].owedShare
+                            //         }
+                            //     }
+                            // })
                             // console.log('ext')
                         }
                         data.totalOwed = 0
@@ -343,7 +391,7 @@ async function deleteExpense(expenseDetails, user) {
                                 data.totalBalance += frnd.balance;
                             }
                         })
-                        // console.log(data)
+                        console.log(data)
                         return data
                     }
                     db.collection("users").doc(doc.id).update({
