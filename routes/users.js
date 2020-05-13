@@ -71,8 +71,12 @@ router.get('/:userid', function (req, res) {
   // console.log(id)
   const data = database.getUser(id);
   data.then(result => {
-    // console.log(result)
-    res.status(200).send(result)
+    console.log(result)
+    if (result) {
+      res.status(200).send(result)
+    } else {
+      res.status(404).send({ data: { error: `User doesn't Exist` } })
+    }
   })
     .catch(err => console.log(err))
 });
@@ -128,7 +132,7 @@ router.post('/:userid/addexpense', async function (req, res) {
 router.post('/:userid/settleup', async function (req, res) {
   var settleupDetails = req.body
   var user = req.params.userid
-  const data = database.settleUp(settleupDetails,user);
+  const data = database.settleUp(settleupDetails, user);
   data.then(result => {
     // console.log(result)
     res.status(200).send(result)
@@ -140,7 +144,7 @@ router.delete('/:userid/deleteexpense', async function (req, res) {
   var user = req.params.userid
   var expenseDetails = req.body
   console.log(expenseDetails)
-  const data = database.deleteExpense(expenseDetails,user);
+  const data = database.deleteExpense(expenseDetails, user);
   data.then(result => {
     // console.log(result)
     res.status(200).send(result)
