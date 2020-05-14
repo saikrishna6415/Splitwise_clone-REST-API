@@ -197,9 +197,9 @@ async function settleUp(settleupDetails, userId) {
 
     function settleUp(settle, data, id) {
         if (settle.friendpaid > 0 && settle.userpaid === 0) {
-            var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.friendId, toId: settle.userId, friendpaid: settle.friendpaid, amount: settle.amount }
+            var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.friendId, toId: settle.userId, friendpaid: settle.friendpaid, amount: settle.amount, date: settle.date }
         } else if (settle.friendpaid === 0 && settle.userpaid > 0) {
-            var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.userId, toId: settle.friendId, userpaid: settle.userpaid, amount: settle.amount }
+            var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.userId, toId: settle.friendId, userpaid: settle.userpaid, amount: settle.amount, date: settle.date }
 
         }
         data.expenses.push(settleupDetails)
@@ -245,7 +245,7 @@ async function addExpenseGroup(expenseDetails, userId) {
     for (let i = 0; i < alldetails.length; i++) {
         alldetails[i].balance = alldetails[i].paidShare - alldetails[i].owedShare
     }
-    const expenseInfo = { expenseId: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description, payments: alldetails }
+    const expenseInfo = { expenseId: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,date: expenseDetails.date,  payments: alldetails }
     const addexpense = await db.collection("users").get()
         .then((snapshot) => {
             snapshot.docs.forEach((doc) => {
