@@ -50,7 +50,7 @@ async function addFriend(friendDetails, id) {
             userDetails = doc.data()
             // console.log(userDetails)
         })
-    const friendData = db.collection("users").get()
+    const friendData = await db.collection("users").get()
         .then((snapshot) => {
             var status = true
             var flag = false
@@ -80,16 +80,23 @@ async function addFriend(friendDetails, id) {
                     friends: [...newFriendDetails.friends, { id: parseInt(userDetails.id), name: userDetails.name, email: userDetails.email, balance: 0 }]
                 })
             };
-        })
-        .then(() => {
-            const newFriend = db.collection('users').doc(user).get()
-                .then(doc => {
+            const updateData = db.collection("users").doc(user).get()
+                .then((doc) => {
                     return doc.data().friends
-                    // res.status(200).send(doc.data())
-                });
-            return newFriend
-
+                })
+            return updateData
         })
+    return friendData
+
+    // .then(() => {
+    //     const newFriend = db.collection('users').doc(user).get()
+    //         .then(doc => {
+    //             return doc.data().friends
+    //             // res.status(200).send(doc.data())
+    //         });
+    //     return newFriend
+
+    // })
     // friendData.then(async () => {
     // const newFriend = await db.collection('users').doc(user).get()
     //     .then(doc => {
@@ -128,8 +135,6 @@ async function deleteFriend(friendDetails, id) {
                     console.log('friend deleted')
                 }
             })
-        })
-        .then(() => {
             const deletedFriend = db.collection('users').doc(userId).get()
                 .then(doc => {
                     // console.log(doc.data)
@@ -137,8 +142,17 @@ async function deleteFriend(friendDetails, id) {
                     return doc.data().friends
                 });
             return deletedFriend
-
         })
+    // .then(() => {
+    // const deletedFriend = db.collection('users').doc(userId).get()
+    //     .then(doc => {
+    //         // console.log(doc.data)
+    //         // res.status(200).send(doc.data())
+    //         return doc.data().friends
+    //     });
+    // return deletedFriend
+
+    // })
     return friendtodelete
     // const deletedFriend = db.collection('users').doc(userId).get()
     //     .then(doc => {
@@ -245,7 +259,7 @@ async function addExpenseGroup(expenseDetails, userId) {
     for (let i = 0; i < alldetails.length; i++) {
         alldetails[i].balance = alldetails[i].paidShare - alldetails[i].owedShare
     }
-    const expenseInfo = { expenseId: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description,date: expenseDetails.date,  payments: alldetails }
+    const expenseInfo = { expenseId: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description, date: expenseDetails.date, payments: alldetails }
     const addexpense = await db.collection("users").get()
         .then((snapshot) => {
             snapshot.docs.forEach((doc) => {
