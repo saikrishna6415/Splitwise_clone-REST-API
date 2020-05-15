@@ -323,9 +323,9 @@ async function deleteExpense(expenseDetails, user) {
                         console.log(data)
                         return data
                     }
-                    // db.collection("users").doc(doc.id).update({
-                    //     ...data,
-                    // })
+                    db.collection("users").doc(doc.id).update({
+                        ...data,
+                    })
                 }
             })
         })
