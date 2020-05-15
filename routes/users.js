@@ -3,6 +3,8 @@ var router = express.Router();
 // var admin = require("firebase-admin");
 var database = require('../models/db')
 var { db } = require('../models/db')
+
+
 router.get('/', function (req, res, next) {
   const data = database.getAllusers()
   data.then(result => {
@@ -46,15 +48,14 @@ router.post('/:userid/addfriend', async function (req, res, next) {
   var user = req.params.userid
   var friendDetails = req.body
   const data = await database.addFriend(friendDetails, user);
-  // data.then(async () => {
-  const data1 = await db.collection('users').doc(user).get()
-    .then(doc => {
-      return doc.data().friends
-    })
-  console.log(data1)
-  res.status(200).send(data1)
-  // })
-  // .catch(err => res.send(err))
+  setTimeout(async () => {
+    const data1 = await db.collection('users').doc(user).get()
+      .then(doc => {
+        return doc.data().friends
+      })
+    console.log(data1)
+    res.status(200).send(data1)
+  }, 2000)
 });
 
 
@@ -62,16 +63,14 @@ router.delete('/:userid/deletefriend/:id', async function (req, res) {
   var user = req.params.userid
   var friendToDel = req.params.id
   const data = await database.deleteFriend(friendToDel, user);
-  const data1 = await db.collection('users').doc(user).get()
-    .then(doc => {
-      return doc.data().friends
-    })
-  console.log(data1)
-  res.status(200).send(data1)
-  //   data.then(result => {
-  //     res.status(200).send(result)
-  //   })
-  //     .catch(err => console.log(err))
+  setTimeout(async () => {
+    const data1 = await db.collection('users').doc(user).get()
+      .then(doc => {
+        return doc.data().friends
+      })
+    console.log(data1)
+    res.status(200).send(data1)
+  }, 2000)
 })
 
 
