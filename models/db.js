@@ -276,38 +276,39 @@ async function deleteExpense(expenseDetails, user) {
                         console.log(index)
                         if (index !== -1) {
                             data.expenses.splice(index, 1);
-                        }
-                        if (expenseInfo.some((user) => {
-                            if (user.id === id)
-                                return user
-                        })) {
+                            if (expenseInfo.some((user) => {
+                                if (user.id === id)
+                                    return user
+                            })) {
 
-                            for (let i = 0; i < bill.length; i++) {
-                                if ((bill[i].id) === id) {
-                                    // console.log("amount", bill[i].paidShare - bill[i].owedShare)
-                                    var amount = bill[i].paidShare - bill[i].owedShare
+                                for (let i = 0; i < bill.length; i++) {
+                                    if ((bill[i].id) === id) {
+                                        // console.log("amount", bill[i].paidShare - bill[i].owedShare)
+                                        var amount = bill[i].paidShare - bill[i].owedShare
+                                    }
+                                }
+                                var sortedBill = bill.sort((a, b) => a.paidShare - b.paidShare)
+                                maxpaid = parseInt(sortedBill[sortedBill.length - 1].id)
+                                console.log(maxpaid)
+                                if (parseInt(id) === maxpaid) {
+                                    data.friends.forEach((friend) => {
+                                        for (let i = 0; i < bill.length; i++) {
+                                            if (parseInt(bill[i].id) === friend.id) {
+                                                friend.balance += bill[i].paidShare - bill[i].owedShare
+                                            }
+                                        }
+
+                                    })
+                                } else {
+                                    data.friends.forEach(friend => {
+                                        if (friend.id === maxpaid) {
+                                            friend.balance -= amount;
+                                        }
+                                    })
                                 }
                             }
-                            var sortedBill = bill.sort((a, b) => a.paidShare - b.paidShare)
-                            maxpaid = parseInt(sortedBill[sortedBill.length - 1].id)
-                            console.log(maxpaid)
-                            if (parseInt(id) === maxpaid) {
-                                data.friends.forEach((friend) => {
-                                    for (let i = 0; i < bill.length; i++) {
-                                        if (parseInt(bill[i].id) === friend.id) {
-                                            friend.balance += bill[i].paidShare - bill[i].owedShare
-                                        }
-                                    }
-
-                                })
-                            } else {
-                                data.friends.forEach(friend => {
-                                    if (friend.id === maxpaid) {
-                                        friend.balance -= amount;
-                                    }
-                                })
-                            }
                         }
+
                         data.totalOwed = 0
                         data.totalBalance = 0
                         data.totalOwe = 0
