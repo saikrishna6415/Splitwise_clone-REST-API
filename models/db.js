@@ -44,13 +44,7 @@ async function addFriend(friendDetails, id) {
     var newFriendDetails
     var userDetails;
     var newFriendId
-    const userData = await db.collection('users').doc(user).get()
-        .then(doc => {
-            // console.log(doc)
-            userDetails = doc.data()
-            // console.log(userDetails)
-        })
-    const friendData = await db.collection("users").get()
+    const friendData = db.collection("users").get()
         .then((snapshot) => {
             var status = true
             var flag = false
@@ -60,6 +54,9 @@ async function addFriend(friendDetails, id) {
                     newFriendDetails = doc.data()
                     newFriendId = doc.id
                     flag = true;
+                }
+                if (doc.id === user) {
+                    userDetails = doc.data()
                 }
             })
             // var status
@@ -80,33 +77,7 @@ async function addFriend(friendDetails, id) {
                     friends: [...newFriendDetails.friends, { id: parseInt(userDetails.id), name: userDetails.name, email: userDetails.email, balance: 0 }]
                 })
             };
-            const updateData = db.collection("users").doc(user).get()
-                .then((doc) => {
-                    return doc.data().friends
-                })
-            return updateData
         })
-    return friendData
-
-    // .then(() => {
-    //     const newFriend = db.collection('users').doc(user).get()
-    //         .then(doc => {
-    //             return doc.data().friends
-    //             // res.status(200).send(doc.data())
-    //         });
-    //     return newFriend
-
-    // })
-    // friendData.then(async () => {
-    // const newFriend = await db.collection('users').doc(user).get()
-    //     .then(doc => {
-    //         return doc.data().friends
-    //         // res.status(200).send(doc.data())
-    //     });
-    // console.log(newFriend)
-
-    // return newFriend
-    // // })
     return friendData
 
 }
@@ -135,32 +106,8 @@ async function deleteFriend(friendDetails, id) {
                     console.log('friend deleted')
                 }
             })
-            const deletedFriend = db.collection('users').doc(userId).get()
-                .then(doc => {
-                    // console.log(doc.data)
-                    // res.status(200).send(doc.data())
-                    return doc.data().friends
-                });
-            return deletedFriend
         })
-    // .then(() => {
-    // const deletedFriend = db.collection('users').doc(userId).get()
-    //     .then(doc => {
-    //         // console.log(doc.data)
-    //         // res.status(200).send(doc.data())
-    //         return doc.data().friends
-    //     });
-    // return deletedFriend
-
-    // })
     return friendtodelete
-    // const deletedFriend = db.collection('users').doc(userId).get()
-    //     .then(doc => {
-    //         // console.log(doc.data)
-    //         // res.status(200).send(doc.data())
-    //         return doc.data().friends
-    //     });
-    // return deletedFriend
 }
 
 async function settleUp(settleupDetails, userId) {
@@ -198,14 +145,6 @@ async function settleUp(settleupDetails, userId) {
                 //     friendData = doc.data()
                 // }
             })
-        }).then(() => {
-            const settle = db.collection('users').doc(userId).get()
-                .then(doc => {
-                    return doc.data().expenses
-                    // res.status(200).send(doc.data().expenses)
-                });
-            return settle
-
         })
     return findudata
 
@@ -241,13 +180,6 @@ async function settleUp(settleupDetails, userId) {
 
         return data
     }
-    // const settle = await db.collection('users').doc(userId).get()
-    //     .then(doc => {
-    //         return doc.data().expenses
-    //         // res.status(200).send(doc.data().expenses)
-    //     });
-    // return settle
-
 }
 
 async function addExpenseGroup(expenseDetails, userId) {
@@ -304,8 +236,6 @@ async function addExpenseGroup(expenseDetails, userId) {
                         data.totalOwed = 0
                         data.totalBalance = 0
                         data.totalOwe = 0
-                        // data.expenses = [...data.expenses, expenseInfo]
-
                         data.friends.forEach(frnd => {
                             // console.log(frnd)
                             if (frnd.balance > 0) {
@@ -327,12 +257,6 @@ async function addExpenseGroup(expenseDetails, userId) {
                     console.log(data)
                 }
             })
-        }).then(() => {
-            expenseData = db.collection('users').doc(userId).get()
-                .then(doc => {
-                    return doc.data()
-                });
-            return expenseData
         })
     return addexpense
 
@@ -380,16 +304,6 @@ async function deleteExpense(expenseDetails, user) {
                                     }
                                 })
                             }
-                            // data.friends.forEach(friend => {
-                            //     // var amount = 0
-
-                            //     for (let i = 0; i < bill.length; i++) {
-                            //         if (parseInt(bill[i].id) === friend.id) {
-                            //             friend.balance += bill[i].paidShare - bill[i].owedShare
-                            //         }
-                            //     }
-                            // })
-                            // console.log('ext')
                         }
                         data.totalOwed = 0
                         data.totalBalance = 0
@@ -414,14 +328,6 @@ async function deleteExpense(expenseDetails, user) {
                 }
             })
         })
-        .then(() => {
-            expenseData = db.collection('users').doc(user).get()
-                .then(doc => {
-                    return doc.data()
-                    // res.status(200).send(doc.data().expenses)
-                });
-            return expenseData
-        })
     return deleteexpense
 }
 
@@ -434,9 +340,8 @@ module.exports = {
     addFriend,
     deleteFriend,
     getAllusers,
-    // addExpense, 
+    db,
     settleUp,
     addExpenseGroup,
     deleteExpense,
-    //  dummycal
 }
