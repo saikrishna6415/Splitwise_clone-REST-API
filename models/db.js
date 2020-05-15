@@ -273,8 +273,10 @@ async function deleteExpense(expenseDetails, user) {
                     var data = newExpense(expenseDetails, expenseInfo, doc.data(), doc.id)
                     function newExpense(expense, bill, data, id) {
                         const index = data.expenses.findIndex(Item => Item.expenseId === expense.expenseId);
-                        // console.log(index)
-                        data.expenses.splice(index, 1);
+                        console.log(index)
+                        if (index !== -1) {
+                            data.expenses.splice(index, 1);
+                        }
                         if (expenseInfo.some((user) => {
                             if (user.id === id)
                                 return user
