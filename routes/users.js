@@ -88,9 +88,25 @@ router.post('/:userid/addexpense', async function (req, res) {
   }, 2000)
 })
 
+router.delete('/:userid/deleteexpense', async function (req, res) {
+  var user = req.params.userid
+  var expenseDetails = req.body
+  console.log(expenseDetails)
+  const data = database.deleteExpense(expenseDetails, user);
+  setTimeout(async () => {
+    const data1 = await db.collection('users').doc(user).get()
+      .then(doc => {
+        return doc.data().expenses
+      })
+    console.log(data1)
+    res.status(200).send(data1)
+  }, 2000)
+})
+
 
 router.post('/:userid/settleup', async function (req, res) {
   var settleupDetails = req.body
+  console.log(settleupDetails)
   var user = req.params.userid
   const data = database.settleUp(settleupDetails, user);
   setTimeout(async () => {
@@ -103,11 +119,10 @@ router.post('/:userid/settleup', async function (req, res) {
   }, 2000)
 })
 
-router.delete('/:userid/deleteexpense', async function (req, res) {
+router.delete('/:userid/deletesettle', async function (req, res) {
+  var settleupDetails = req.body
   var user = req.params.userid
-  var expenseDetails = req.body
-  console.log(expenseDetails)
-  const data = database.deleteExpense(expenseDetails, user);
+  const data = database.deletSettle(settleupDetails, user);
   setTimeout(async () => {
     const data1 = await db.collection('users').doc(user).get()
       .then(doc => {

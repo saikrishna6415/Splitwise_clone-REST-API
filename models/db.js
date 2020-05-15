@@ -135,35 +135,80 @@ async function settleUp(settleupDetails, userId) {
             snapshot.docs.forEach((doc) => {
                 // console.log(doc.id)
                 if (doc.id === settleupDetails.userId || doc.id === settleupDetails.friendId) {
-                    var data = settleUp(settleupDetails, doc.data(), doc.id)
-                    // console.log(data);
-                    db.collection("users").doc(doc.id).set({
+                    var data = settle(settleupDetails, doc.data(), doc.id)
+                    db.collection("users").doc(doc.id).update({
                         ...data
                     })
                 }
-                // if (doc.id === settleupDetails.friendId) {
-                //     friendData = doc.data()
-                // }
             })
         })
     return findudata
 
-    function settleUp(settle, data, id) {
+    function settle(settle, data, id) {
         if (settle.friendpaid > 0 && settle.userpaid === 0) {
-            var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.friendId, toId: settle.userId, friendpaid: settle.friendpaid, amount: settle.amount, date: settle.date }
+            var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.friendId, toId: settle.userId, friendpaid: settle.friendpaid, amount: settle.friendpaid, date: settle.date }
         } else if (settle.friendpaid === 0 && settle.userpaid > 0) {
-            var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.userId, toId: settle.friendId, userpaid: settle.userpaid, amount: settle.amount, date: settle.date }
+            var settleupDetails = { expenseId: settle.expenseId, description: 'payment', fromId: settle.userId, toId: settle.friendId, userpaid: settle.userpaid, amount: settle.friendpaid, date: settle.date }
 
         }
         data.expenses.push(settleupDetails)
         data.friends.forEach((frnd) => {
             if (frnd.id === parseInt(settle.friendId) && id === settle.userId) {
-                frnd.balance -= settle.amount;
+                frnd.balance -= settle.friendpaid;
             }
             if (frnd.id === parseInt(settle.userId) && id === settle.friendId) {
-                frnd.balance += settle.amount;
+                frnd.balance += settle.friendpaid;
             }
         });
+        data.totalBalance = 0;
+        data.totalOwe = 0;
+        data.totalOwed = 0;
+        data.friends.forEach(frnd => {
+            if (frnd.balance > 0) {
+                data.totalOwed += frnd.balance;
+                data.totalBalance += frnd.balance;
+            }
+            if (frnd.balance < 0) {
+                data.totalOwe -= frnd.balance;
+                data.totalBalance += frnd.balance;
+            }
+        })
+
+        return data
+    }
+}
+
+async function deletSettle(settleupDetails, userId) {
+    const findudata = await db.collection("users").get()
+        .then((snapshot) => {
+            snapshot.docs.forEach((doc) => {
+                // console.log(doc.id)
+                if (doc.id === settleupDetails.fromId || doc.id === settleupDetails.toId) {
+                    var data = settle(settleupDetails, doc.data(), doc.id)
+                    console.log(data);
+                    console.log(doc.id)
+                    db.collection("users").doc(doc.id).update({
+                        ...data
+                    })
+                }
+            })
+        })
+    return findudata
+
+    function settle(settle, data, id) {
+        const index = data.expenses.findIndex(Item => Item.expenseId === settle.expenseId);
+        if (index !== -1) {
+            data.expenses.splice(index, 1);
+            data.friends.forEach((frnd) => {
+                if (frnd.id === parseInt(settle.toId) && id === settle.fromId) {
+                    frnd.balance += settle.friendpaid;
+                }
+                if (frnd.id === parseInt(settle.fromId) && id === settle.toId) {
+                    frnd.balance -= settle.friendpaid;
+                }
+            });
+        }
+
         data.totalBalance = 0;
         data.totalOwe = 0;
         data.totalOwed = 0;
@@ -348,4 +393,5 @@ module.exports = {
     settleUp,
     addExpenseGroup,
     deleteExpense,
+    deletSettle
 }
