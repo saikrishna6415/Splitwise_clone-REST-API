@@ -380,6 +380,51 @@ async function deleteExpense(expenseDetails, user) {
     return deleteexpense
 }
 
+async function addGroup(groupDetails, userId) {
+    const addgroup = await db.collection("users").get()
+        .then((snapshot) => {
+            snapshot.docs.forEach((doc) => {
+                // var ispresent 
+                if (userId === doc.id || groupDetails.members.some((function (user) { return user.id === doc.id }))) {
+                    console.log(doc.id)
+                    var data = newGroup(groupDetails, doc.data(), doc.id)
+                    function newGroup(groupsInfo, data, id) {
+                        data.groups.unshift(groupsInfo);
+
+                        return data
+                    }
+                    db.collection("users").doc(doc.id).update({
+                        ...data,
+                    })
+                }
+            })
+        })
+    return addgroup
+}
+
+async function deleteGroup(groupDetails, userId) {
+    const deletegroup = await db.collection("users").get()
+        .then((snapshot) => {
+            snapshot.docs.forEach((doc) => {
+                if (userId === doc.id || groupDetails.members.some((function (user) { return user.id === doc.id }))) {
+                    console.log(doc.id)
+                    var data = newGroup(groupDetails, doc.data(), doc.id)
+                    function newGroup(groupDetails, data, id) {
+                        const index = data.groups.findIndex(Item => Item.groupid === groupDetails.groupid);
+                        console.log(index)
+                        if (index !== -1) {
+                            data.groups.splice(index, 1);
+                        }
+                        return data
+                    }
+                    db.collection("users").doc(doc.id).update({
+                        ...data,
+                    })
+                }
+            })
+        })
+    return deletegroup
+}
 
 
 
@@ -393,5 +438,7 @@ module.exports = {
     settleUp,
     addExpenseGroup,
     deleteExpense,
-    deletSettle
+    deletSettle,
+    addGroup,
+    deleteGroup
 }

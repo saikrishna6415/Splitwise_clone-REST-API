@@ -30,6 +30,8 @@ router.get('/:userid', function (req, res, next) {
     .catch(err => res.send({ data: { error: "error occured" } }))
 });
 
+
+
 router.get('/:userid/getfriends', async function (req, res, next) {
   // id = current user 
   let id = req.params.userid
@@ -43,6 +45,9 @@ router.get('/:userid/getfriends', async function (req, res, next) {
   })
     .catch(err => res.send({ data: { error: "error occured" } }))
 });
+
+
+
 
 router.post('/:userid/addfriend', async function (req, res, next) {
   var user = req.params.userid
@@ -80,6 +85,49 @@ router.delete('/:userid/deletefriend/:id', async function (req, res) {
 })
 
 
+
+router.get('/:userid/getallexpenses', async function (req, res) {
+  var user = req.params.userid
+  const data = db.collection('users').doc(user).get()
+    .then(doc => {
+      return doc.data()
+    })
+  data.then(result => {
+    console.log(result)
+    res.status(200).send(result.expenses)
+  })
+    .catch((err) => res.send({ data: { error: "an error occured" } }));
+})
+
+
+
+router.get('/:userid/getexpense/:expenseid', async function (req, res) {
+  var user = req.params.userid
+  var expenseId = req.params.expenseid
+  const data = db.collection('users').doc(user).get()
+    .then(doc => {
+      return doc.data()
+    })
+  data.then(result => {
+    if (result.expenses.length > 0) {
+      var expense;
+      result.expenses.forEach(exp => {
+        if (exp.expenseId === parseInt(expenseId)) {
+          expense = exp
+        }
+      })
+      console.log(expense)
+      expense ? res.status(200).send(expense) : res.send({ data: { msg: "expense does not exist" } })
+    } else {
+      res.status(404).send({ data: { msg: "No expenses" } })
+    }
+  })
+    .catch((err) => res.send({ data: { error: "an error occured" } }))
+})
+
+
+
+
 router.post('/:userid/addexpense', async function (req, res) {
   var user = req.params.userid
   var expenseDetails = req.body
@@ -94,8 +142,9 @@ router.post('/:userid/addexpense', async function (req, res) {
       res.status(200).send(data1)
     }, 2000)
   }).catch((err) => res.send({ data: { error: "an error occured" } }));
-
 })
+
+
 
 router.delete('/:userid/deleteexpense', async function (req, res) {
   var user = req.params.userid
@@ -115,6 +164,7 @@ router.delete('/:userid/deleteexpense', async function (req, res) {
 })
 
 
+
 router.post('/:userid/settleup', async function (req, res) {
   var settleupDetails = req.body
   console.log(settleupDetails)
@@ -131,6 +181,8 @@ router.post('/:userid/settleup', async function (req, res) {
     }, 2000)
   })
 })
+
+
 
 router.delete('/:userid/deletesettle', async function (req, res) {
   var settleupDetails = req.body
@@ -149,14 +201,81 @@ router.delete('/:userid/deletesettle', async function (req, res) {
 })
 
 
-// router.post('/addexpense', async function (req, res) {
-//   var expenseDetails = req.body
-//   const data = database.addExpenseGroup(expenseDetails);
-//   data.then(result => {
-//     // console.log(result)
-//     res.status(200).send(result)
-//   })
-//     .catch(err => console.log(err))
-// })
+
+
+router.get('/:userid/getallgroups', async function (req, res) {
+  var user = req.params.userid
+  const data = db.collection('users').doc(user).get()
+    .then(doc => {
+      return doc.data()
+    })
+  data.then(result => {
+    // console.log(result)
+    res.status(200).send(result.groups)
+  })
+    .catch((err) => res.send({ data: { error: "an error occured" } }));
+})
+
+
+
+
+router.get('/:userid/getgroup/:groupid', async function (req, res) {
+  var user = req.params.userid
+  var groupId = req.params.groupid
+  const data = db.collection('users').doc(user).get()
+    .then(doc => {
+      return doc.data()
+    })
+  data.then(result => {
+    if (result.groups.length > 0) {
+      console.log(result.groups.length)
+      var group;
+      result.groups.forEach(grp => {
+        if (grp.groupid === parseInt(groupId)) {
+          group = grp
+        }
+      })
+      group ? res.status(200).send(group) : res.send({ data: { msg: "group does not exist" } })
+    }
+  })
+    .catch((err) => res.send({ data: { error: "an error occured" } }));
+})
+
+
+
+router.post('/:userid/addgroup', async function (req, res) {
+  var user = req.params.userid
+  var groupDetails = req.body
+  const data = database.addGroup(groupDetails, user);
+  data.then((result) => {
+    setTimeout(async () => {
+      const data1 = await db.collection('users').doc(user).get()
+        .then(doc => {
+          return doc.data().groups
+        })
+      console.log(data1)
+      res.status(200).send(data1)
+    }, 2000)
+  }).catch((err) => res.send({ data: { error: "an error occured" } }));
+})
+
+
+
+router.delete('/:userid/deletegroup/', async function (req, res) {
+  var user = req.params.userid
+  var groupDetails = req.body
+  const data = database.deleteGroup(groupDetails, user);
+  data.then((result) => {
+    setTimeout(async () => {
+      const data1 = await db.collection('users').doc(user).get()
+        .then(doc => {
+          return doc.data().groups
+        })
+      console.log(data1)
+      res.status(200).send(data1)
+    }, 2000)
+  }).catch((err) => res.send({ data: { error: "an error occured" } }));
+})
+
 
 module.exports = router;
