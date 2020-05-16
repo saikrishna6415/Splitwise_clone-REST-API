@@ -44,7 +44,7 @@ async function addFriend(friendDetails, id) {
     var newFriendDetails
     var userDetails;
     var newFriendId
-    const friendData = db.collection("users").get()
+    const friendData = await db.collection("users").get()
         .then((snapshot) => {
             var status = true
             var flag = false
@@ -78,7 +78,7 @@ async function addFriend(friendDetails, id) {
                 })
             };
         })
-    return friendData
+    return userDetails
 
 }
 
@@ -236,7 +236,7 @@ async function addExpenseGroup(expenseDetails, userId) {
     for (let i = 0; i < alldetails.length; i++) {
         alldetails[i].balance = alldetails[i].paidShare - alldetails[i].owedShare
     }
-    const expenseInfo = { expenseId: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description, date: expenseDetails.date, payments: alldetails }
+    const expenseInfo = { expenseId: expenseDetails.expenseId, amount: expenseDetails.amount, description: expenseDetails.description, date: expenseDetails.date, groupid: expenseDetails.groupid, payments: alldetails }
     const addexpense = await db.collection("users").get()
         .then((snapshot) => {
             snapshot.docs.forEach((doc) => {
@@ -258,7 +258,7 @@ async function addExpenseGroup(expenseDetails, userId) {
                                 }
                             }
                             var sortedBill = bill.sort((a, b) => a.paidShare - b.paidShare)
-                            maxpaid = parseInt(sortedBill[sortedBill.length - 1].id)
+                            var maxpaid = parseInt(sortedBill[sortedBill.length - 1].id)
                             if (parseInt(id) === maxpaid) {
                                 data.friends.forEach((friend) => {
                                     for (let i = 0; i < bill.length; i++) {
@@ -333,7 +333,7 @@ async function deleteExpense(expenseDetails, user) {
                                     }
                                 }
                                 var sortedBill = bill.sort((a, b) => a.paidShare - b.paidShare)
-                                maxpaid = parseInt(sortedBill[sortedBill.length - 1].id)
+                                var maxpaid = parseInt(sortedBill[sortedBill.length - 1].id)
                                 console.log(maxpaid)
                                 if (parseInt(id) === maxpaid) {
                                     data.friends.forEach((friend) => {
@@ -371,9 +371,9 @@ async function deleteExpense(expenseDetails, user) {
                         console.log(data)
                         return data
                     }
-                    // db.collection("users").doc(doc.id).update({
-                    //     ...data,
-                    // })
+                    db.collection("users").doc(doc.id).update({
+                        ...data,
+                    })
                 }
             })
         })
