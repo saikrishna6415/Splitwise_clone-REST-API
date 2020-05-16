@@ -93,8 +93,11 @@ router.get('/:userid/getallexpenses', async function (req, res) {
       return doc.data()
     })
   data.then(result => {
-    console.log(result)
-    res.status(200).send(result.expenses)
+    if (result.expenses.length > 0) {
+      res.status(200).send(result.expenses)
+    } else {
+      res.send({ data: { msg: " expenses doesn't exists" } })
+    }
   })
     .catch((err) => res.send({ data: { error: "an error occured" } }));
 })
@@ -210,8 +213,11 @@ router.get('/:userid/getallgroups', async function (req, res) {
       return doc.data()
     })
   data.then(result => {
-    // console.log(result)
-    res.status(200).send(result.groups)
+    if (result.groups.length > 0) {
+      res.status(200).send(result.groups)
+    } else {
+      res.send({ data: { msg: " groups doesn't exists" } })
+    }
   })
     .catch((err) => res.send({ data: { error: "an error occured" } }));
 })
