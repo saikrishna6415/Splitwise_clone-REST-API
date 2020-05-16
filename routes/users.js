@@ -149,18 +149,17 @@ router.post('/:userid/addexpense', async function (req, res) {
 
 
 
-router.delete('/:userid/deleteexpense', async function (req, res) {
+router.delete('/:userid/deleteexpense/:expenseid', async function (req, res) {
   var user = req.params.userid
-  var expenseDetails = req.body
-  console.log(expenseDetails)
-  const data = database.deleteExpense(expenseDetails, user);
+  var expenseId = req.params.expenseid
+  const data = database.deleteExpense(expenseId, user);
   data.then(result => {
     setTimeout(async () => {
       const data1 = await db.collection('users').doc(user).get()
         .then(doc => {
           return doc.data().expenses
         })
-      console.log(data1)
+      // console.log(data1)
       res.status(200).send(data1)
     }, 2000)
   }).catch((err) => res.send({ data: { error: "an error occured" } }));
@@ -187,17 +186,17 @@ router.post('/:userid/settleup', async function (req, res) {
 
 
 
-router.delete('/:userid/deletesettle', async function (req, res) {
-  var settleupDetails = req.body
+router.delete('/:userid/deletesettle/:expenseid', async function (req, res) {
+  var settleupId = req.params.expenseid
   var user = req.params.userid
-  const data = database.deletSettle(settleupDetails, user);
+  const data = database.deletSettle(settleupId, user);
   data.then(result => {
     setTimeout(async () => {
       const data1 = await db.collection('users').doc(user).get()
         .then(doc => {
           return doc.data().expenses
         })
-      console.log(data1)
+      // console.log(data1)
       res.status(200).send(data1)
     }, 2000)
   }).catch((err) => res.send({ data: { error: "an error occured" } }));
@@ -267,17 +266,17 @@ router.post('/:userid/addgroup', async function (req, res) {
 
 
 
-router.delete('/:userid/deletegroup/', async function (req, res) {
+router.delete('/:userid/deletegroup/:groupid', async function (req, res) {
   var user = req.params.userid
-  var groupDetails = req.body
-  const data = database.deleteGroup(groupDetails, user);
+  var groupId = req.params.groupid
+  const data = database.deleteGroup(groupId, user);
   data.then((result) => {
     setTimeout(async () => {
       const data1 = await db.collection('users').doc(user).get()
         .then(doc => {
           return doc.data().groups
         })
-      console.log(data1)
+      // console.log(data1)
       res.status(200).send(data1)
     }, 2000)
   }).catch((err) => res.send({ data: { error: "an error occured" } }));

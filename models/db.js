@@ -178,14 +178,28 @@ async function settleUp(settleupDetails, userId) {
     }
 }
 
-async function deletSettle(settleupDetails, userId) {
+async function deletSettle(settleUpId, userId) {
+    var settleupDetails
+    const data = await db.collection('users').doc(userId).get()
+        .then(doc => {
+            return doc.data()
+        })
+    // data.then(result => {
+    if (data.expenses.length > 0) {
+        data.expenses.map(exp => {
+            if (exp.expenseId === parseInt(settleUpId)) {
+                settleupDetails = exp
+            }
+        })
+    }
+    // console.log(settleupDetails)
     const findudata = await db.collection("users").get()
         .then((snapshot) => {
             snapshot.docs.forEach((doc) => {
                 // console.log(doc.id)
                 if (doc.id === settleupDetails.fromId || doc.id === settleupDetails.toId) {
                     var data = settle(settleupDetails, doc.data(), doc.id)
-                    console.log(data);
+                    // console.log(data);
                     console.log(doc.id)
                     db.collection("users").doc(doc.id).update({
                         ...data
@@ -201,10 +215,10 @@ async function deletSettle(settleupDetails, userId) {
             data.expenses.splice(index, 1);
             data.friends.forEach((frnd) => {
                 if (frnd.id === parseInt(settle.toId) && id === settle.fromId) {
-                    frnd.balance += settle.friendpaid;
+                    frnd.balance -= settle.friendpaid;
                 }
                 if (frnd.id === parseInt(settle.fromId) && id === settle.toId) {
-                    frnd.balance -= settle.friendpaid;
+                    frnd.balance += settle.friendpaid;
                 }
             });
         }
@@ -307,9 +321,21 @@ async function addExpenseGroup(expenseDetails, userId) {
 
 }
 
-async function deleteExpense(expenseDetails, user) {
-    var expenseInfo = expenseDetails.payments
-    // console.log(expenseInfo)
+async function deleteExpense(expenseId, user) {
+    var expenseDetails
+    const data = await db.collection('users').doc(user).get()
+        .then(doc => {
+            return doc.data()
+        })
+    if (data.expenses.length > 0) {
+        data.expenses.map(exp => {
+            if (exp.expenseId === parseInt(expenseId)) {
+                expenseDetails = exp
+            }
+        })
+    }
+    const expenseInfo = expenseDetails.payments
+    console.log(expenseInfo)
     const deleteexpense = await db.collection("users").get()
         .then((snapshot) => {
             snapshot.docs.forEach((doc) => {
@@ -368,7 +394,7 @@ async function deleteExpense(expenseDetails, user) {
                                 data.totalBalance += frnd.balance;
                             }
                         })
-                        console.log(data)
+                        // console.log(data)
                         return data
                     }
                     db.collection("users").doc(doc.id).update({
@@ -402,7 +428,21 @@ async function addGroup(groupDetails, userId) {
     return addgroup
 }
 
-async function deleteGroup(groupDetails, userId) {
+async function deleteGroup(groupId, userId) {
+    var groupDetails
+    const data = await db.collection('users').doc(userId).get()
+        .then(doc => {
+            return doc.data()
+        })
+    // data.then(result => {
+    if (data.groups.length > 0) {
+        data.groups.map(grp => {
+            if (grp.groupid === parseInt(groupId)) {
+                groupDetails = grp
+            }
+        })
+    }
+    console.log(groupDetails)
     const deletegroup = await db.collection("users").get()
         .then((snapshot) => {
             snapshot.docs.forEach((doc) => {
