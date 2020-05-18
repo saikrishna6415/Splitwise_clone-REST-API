@@ -5,6 +5,53 @@ var database = require('../models/db')
 var { db } = require('../models/db')
 
 
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+/* GET home page. */
+// Swagger set up
+const options = {
+  swaggerDefinition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Time to document that Express API you built",
+      version: "1.0.0",
+      description:
+        "A test project to understand how easy it is to document and Express API",
+      contact: {
+        name: "Swagger",
+        url: "https://swagger.io",
+        email: "Info@SmartBear.com"
+      }
+    },
+    servers: [
+      {
+        url: "http://localhost:3000/"
+      }
+    ]
+  },
+  apis: ['./routes/users.js']
+};
+const specs = swaggerJsdoc(options);
+router.use("/docs", swaggerUi.serve);
+router.get(
+  "/docs",
+  swaggerUi.setup(specs, {
+    explorer: true
+  })
+);
+
+/**
+ * @swagger
+ * path:
+ *  /users/:
+ *    get:
+ *      description: An array of users
+ *      responses:
+ *          "200":
+ *            description: A successfull response
+ *              
+ */
+
 router.get('/', function (req, res, next) {
   const data = database.getAllusers()
   data.then(result => {
@@ -14,7 +61,21 @@ router.get('/', function (req, res, next) {
   //   .catch(err => console.log(err))
 });
 
-
+/**
+ * @swagger
+ *
+ * /users/:userid:
+ *   get:
+ *     description: Get user by ID
+ *     parameters:
+ *       - userid: userid
+ *         description: UserId to get user details.
+ *         in: formData
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
 router.get('/:userid', function (req, res, next) {
   var id = req.params.userid
   // console.log(id)
@@ -181,7 +242,7 @@ router.post('/:userid/settleup', async function (req, res) {
       console.log(data1)
       res.status(200).send(data1)
     }, 2000)
-  })
+  }).catch((err) => res.send({ data: { error: "an error occured" } }));
 })
 
 
