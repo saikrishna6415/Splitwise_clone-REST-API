@@ -64,13 +64,13 @@ router.get('/', function (req, res, next) {
 /**
  * @swagger
  *
- * /users/:userid:
+ * /users/{userid}:
  *   get:
  *     description: Get user by ID
  *     parameters:
- *       - userid: userid
+ *       - name: userid
+ *         in: path
  *         description: UserId to get user details.
- *         in: formData
  *         required: true
  *     responses:
  *       200:
@@ -92,7 +92,21 @@ router.get('/:userid', function (req, res, next) {
 });
 
 
-
+/**
+ * @swagger
+ *
+ * /users/{userid}/getfriends:
+ *   get:
+ *     description: Get all friends
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: Get all friends.
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
 router.get('/:userid/getfriends', async function (req, res, next) {
   // id = current user 
   let id = req.params.userid
@@ -109,6 +123,33 @@ router.get('/:userid/getfriends', async function (req, res, next) {
 
 
 
+/**
+ * @swagger
+ *
+ * /users/{userid}/addfriend:
+ *   post:
+ *     description: Add a friend
+ *     produces:
+ *     - application/json
+ *     parameters:
+ *     - in : path
+ *       name: userid
+ *     - in : body
+ *       name: body
+ *       schema:
+ *          type: object
+ *          properties:
+ *            name : 
+ *               type : string
+ *            email:
+ *               type : string
+ *       description: data for adding a friend
+ *       required: true
+ *     respones:
+ *        "200":
+ *            description: successful operation
+ * 
+ */
 
 router.post('/:userid/addfriend', async function (req, res, next) {
   var user = req.params.userid
