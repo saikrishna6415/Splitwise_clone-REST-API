@@ -1,11 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-var database = require('../database/dbconnection')
-var { db } = require('../database/dbconnection')
-
-
+// var admin = require("firebase-admin");
+var database = require('../models/db')
+var { db } = require('../models/db')
 
 
 router.get('/', function (req, res, next) {

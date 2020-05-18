@@ -1,4 +1,15 @@
-var { db } = require('../database/dbconnection')
+var admin = require("firebase-admin");
+
+var serviceAccount = require('../database/database.json');
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://splitwise-7d6e6.firebaseio.com"
+});
+
+const db = admin.firestore()
+
+
 
 async function getAllusers() {
     const data = await db.collection('users').get()
@@ -464,7 +475,7 @@ module.exports = {
     addFriend,
     deleteFriend,
     getAllusers,
-    // db,
+    db,
     settleUp,
     addExpenseGroup,
     deleteExpense,
