@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
 // var admin = require("firebase-admin");
-var database = require('../models/db')
-var { db } = require('../models/db')
+var database = require('../models/dbfunctions')
+var { db } = require('../database/dbconnection')
 
 
 const swaggerJsdoc = require('swagger-jsdoc');
