@@ -19,9 +19,9 @@ const options = {
         "A splitwise project to understand API endpoints",
     },
     servers: [
-      {
-        url: "http://localhost:3000/"
-      },
+      // {
+      //   url: "http://localhost:3000/"
+      // },
       {
         url: "https://splitwise-api.herokuapp.com/"
       }
