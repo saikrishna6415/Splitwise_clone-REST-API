@@ -13,19 +13,17 @@ const options = {
   swaggerDefinition: {
     openapi: "3.0.0",
     info: {
-      title: "Time to document that Express API you built",
+      title: "Spliwise API Documenetation",
       version: "1.0.0",
       description:
-        "A test project to understand how easy it is to document and Express API",
-      contact: {
-        name: "Swagger",
-        url: "https://swagger.io",
-        email: "Info@SmartBear.com"
-      }
+        "A splitwise project to understand API endpoints",
     },
     servers: [
       {
         url: "http://localhost:3000/"
+      },
+      {
+        url: "https://splitwise-api.herokuapp.com/"
       }
     ]
   },
@@ -134,20 +132,21 @@ router.get('/:userid/getfriends', async function (req, res, next) {
  *     parameters:
  *     - in : path
  *       name: userid
- *     - in : body
- *       name: body
- *       schema:
- *          type: object
- *          properties:
- *            name : 
- *               type : string
- *            email:
- *               type : string
- *       description: data for adding a friend
- *       required: true
- *     respones:
- *        "200":
- *            description: successful operation
+ *     requestBody:
+ *         content:
+ *            application/json:
+ *               schema:
+ *                  type: object
+ *                  properties:
+ *                     name:         
+ *                        type: string
+ *                     email:          
+ *                        type: string
+ *     responses:
+ *         '200':
+ *             description: successfull response
+ *         '500':
+ *             description: internal server error
  * 
  */
 
@@ -156,7 +155,6 @@ router.post('/:userid/addfriend', async function (req, res, next) {
   var friendDetails = req.body
   const data = database.addFriend(friendDetails, user);
   data.then((result) => {
-    console.log(result)
     setTimeout(async () => {
       const data1 = await db.collection('users').doc(user).get()
         .then(doc => {
@@ -167,6 +165,24 @@ router.post('/:userid/addfriend', async function (req, res, next) {
   }).catch((err) => next(err));
 })
 
+
+/**
+ * @swagger
+ *
+ * /users/{userid}/deletefriend/{id}:
+ *   delete:
+ *     description: delete a friend
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *       - name: id
+ *         in: path
+ *         description: delete friend.
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
 
 
 router.delete('/:userid/deletefriend/:id', async function (req, res, next) {
@@ -188,6 +204,21 @@ router.delete('/:userid/deletefriend/:id', async function (req, res, next) {
 
 
 
+/**
+ * @swagger
+ *
+ * /users/{userid}/getallexpenses:
+ *   get:
+ *     description: Get all expenses
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: Get all expesnes of a user.
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
 router.get('/:userid/getallexpenses', async function (req, res, next) {
   var user = req.params.userid
   const data = db.collection('users').doc(user).get()
@@ -205,6 +236,24 @@ router.get('/:userid/getallexpenses', async function (req, res, next) {
 })
 
 
+/**
+ * @swagger
+ *
+ * /users/{userid}/getexpense/{id}:
+ *   get:
+ *     description: get a expense by Id
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *       - name: id
+ *         in: path
+ *         description: get a expense by Id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
+
 
 router.get('/:userid/getexpense/:expenseid', async function (req, res, next) {
   var user = req.params.userid
@@ -221,7 +270,6 @@ router.get('/:userid/getexpense/:expenseid', async function (req, res, next) {
           expense = exp
         }
       })
-      console.log(expense)
       expense ? res.status(200).send(expense) : res.send({ data: { msg: "expense does not exist" } })
     } else {
       res.status(404).send({ data: { msg: "No expenses" } })
@@ -233,6 +281,57 @@ router.get('/:userid/getexpense/:expenseid', async function (req, res, next) {
 
 
 
+/**
+ * @swagger
+ *
+ * /users/{userid}/addexpense:
+ *   post:
+ *     description: Add a expense
+ *     produces:
+ *     - application/json
+ *     parameters:
+ *     - in : path
+ *       name: userid
+ *     requestBody:
+ *         content:
+ *            application/json:
+ *               schema:
+ *                  type: object
+ *                  properties:
+ *                     expenseId:         
+ *                        type: integer
+ *                     userid:          
+ *                        type: string
+ *                     userpaid:         
+ *                        type: integer
+ *                     userowedshare:          
+ *                        type: integer
+ *                     friends:
+ *                        type : array
+ *                        items : 
+ *                           type : object
+ *                           properties:
+ *                             id : 
+ *                                type : string
+ *                             paidShare :
+ *                                type : integer
+ *                             owedShare :
+ *                                type : integer
+ *                     description :
+ *                        type : string
+ *                     amount :
+ *                        type : string
+ *                     date :
+ *                        type : string
+ *                     groupId :
+ *                        type : integer
+ *     responses:
+ *         '200':
+ *             description: successfull response
+ *         '500':
+ *             description: internal server error
+ * 
+ */
 router.post('/:userid/addexpense', async function (req, res, next) {
   var user = req.params.userid
   var expenseDetails = req.body
@@ -251,6 +350,24 @@ router.post('/:userid/addexpense', async function (req, res, next) {
 
 
 
+/**
+ * @swagger
+ *
+ * /users/{userid}/deleteexpense/{expenseid}:
+ *   delete:
+ *     description: delete a expense
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *       - name: expenseid
+ *         in: path
+ *         description: delete expense.
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
+
 router.delete('/:userid/deleteexpense/:expenseid', async function (req, res, next) {
   var user = req.params.userid
   var expenseId = req.params.expenseid
@@ -268,10 +385,54 @@ router.delete('/:userid/deleteexpense/:expenseid', async function (req, res, nex
 })
 
 
+/**
+ * @swagger
+ *
+ * /users/{userid}/settleup:
+ *   post:
+ *     description: settlup
+ *     produces:
+ *     - application/json
+ *     parameters:
+ *     - in : path
+ *       name: userid
+ *     requestBody:
+ *         content:
+ *            application/json:
+ *               schema:
+ *                  type: object
+ *                  properties:
+ *                     expenseId:         
+ *                        type: integer
+ *                     userId:          
+ *                        type: string
+ *                     userpaid:         
+ *                        type: integer
+ *                     userowedshare:          
+ *                        type: integer
+ *                     friendId:
+ *                        type : string
+ *                     friendpaid:         
+ *                        type: integer
+ *                     friendowedShare :          
+ *                        type: integer
+ *                     description :
+ *                        type : string
+ *                     amount :
+ *                        type : integer
+ *                     date :
+ *                        type : string
+ *     responses:
+ *         '200':
+ *             description: successfull response
+ *         '500':
+ *             description: internal server error
+ * 
+ */
 
 router.post('/:userid/settleup', async function (req, res, next) {
   var settleupDetails = req.body
-  console.log(settleupDetails)
+  // console.log(settleupDetails)
   var user = req.params.userid
   const data = database.settleUp(settleupDetails, user);
   data.then(result => {
@@ -286,7 +447,23 @@ router.post('/:userid/settleup', async function (req, res, next) {
   }).catch((err) => next(err))
 })
 
-
+/**
+ * @swagger
+ *
+ * /users/{userid}/deletesettle/{expenseid}:
+ *   delete:
+ *     description: delete a settle
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *       - name: expenseid
+ *         in: path
+ *         description: delete settle.
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
 
 router.delete('/:userid/deletesettle/:expenseid', async function (req, res, next) {
   var settleupId = req.params.expenseid
@@ -306,6 +483,21 @@ router.delete('/:userid/deletesettle/:expenseid', async function (req, res, next
 
 
 
+/**
+ * @swagger
+ *
+ * /users/{userid}/getallgroups:
+ *   get:
+ *     description: Get all groups
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *         description: Get all groups of a user.
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
 
 router.get('/:userid/getallgroups', async function (req, res, next) {
   var user = req.params.userid
@@ -325,6 +517,24 @@ router.get('/:userid/getallgroups', async function (req, res, next) {
 
 
 
+
+/**
+ * @swagger
+ *
+ * /users/{userid}/getgroup/{groupid}:
+ *   get:
+ *     description: get a group by groupid
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *       - name: groupid
+ *         in: path
+ *         description: get a expense by groupid
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
 
 router.get('/:userid/getgroup/:groupid', async function (req, res, next) {
   var user = req.params.userid
@@ -350,6 +560,46 @@ router.get('/:userid/getgroup/:groupid', async function (req, res, next) {
 
 
 
+/**
+ * @swagger
+ *
+ * /users/{userid}/addgroup:
+ *   post:
+ *     description: Add a group
+ *     produces:
+ *     - application/json
+ *     parameters:
+ *     - in : path
+ *       name: userid
+ *     requestBody:
+ *         content:
+ *            application/json:
+ *               schema:
+ *                  type: object
+ *                  properties:
+ *                     groupid:         
+ *                        type: integer
+ *                     name:          
+ *                        type: string
+ *                     members:
+ *                        type : array
+ *                        items : 
+ *                           type : object
+ *                           properties:
+ *                             id : 
+ *                                type : string
+ *                             name :
+ *                                type : integer
+ *                             email :
+ *                                type : integer
+ *     responses:
+ *         '200':
+ *             description: successfull response
+ *         '500':
+ *             description: internal server error
+ * 
+ */
+
 router.post('/:userid/addgroup', async function (req, res, next) {
   var user = req.params.userid
   var groupDetails = req.body
@@ -366,7 +616,23 @@ router.post('/:userid/addgroup', async function (req, res, next) {
   }).catch((err) => next(err));
 })
 
-
+/**
+ * @swagger
+ *
+ * /users/{userid}/deletegroup/{groupid}:
+ *   delete:
+ *     description: delete a group
+ *     parameters:
+ *       - name: userid
+ *         in: path
+ *       - name: groupid
+ *         in: path
+ *         description: delete group.
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: successfull response
+ */
 
 router.delete('/:userid/deletegroup/:groupid', async function (req, res, next) {
   var user = req.params.userid
